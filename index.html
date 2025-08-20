@@ -1,24 +1,238 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Калькулятор</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Калькулятор юнит‑экономики для Ozon (HTML/CSS/JS)</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="calculator">
-    <h1>Калькулятор</h1>
-    <input type="number" id="num1" placeholder="Число 1">
-    <input type="number" id="num2" placeholder="Число 2">
-    
-    <div class="buttons">
-      <button onclick="calculate('+')">+</button>
-      <button onclick="calculate('-')">-</button>
-      <button onclick="calculate('*')">*</button>
-      <button onclick="calculate('/')">/</button>
-    </div>
+  <div class="container">
+    <header>
+      <h1>Калькулятор юнит‑экономики для Ozon</h1>
+      <p class="muted">Категория → авто‑комиссия. Габариты → автологистика по объёмному весу. Все ставки редактируемы.</p>
+    </header>
 
-    <h2>Результат: <span id="result">0</span></h2>
+    <section class="cards">
+      <div class="card kpi">
+        <div class="kpi-title">Выручка на юнит</div>
+        <div id="rev" class="kpi-value">—</div>
+        <div class="kpi-foot">после скидки</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-title">Чистая прибыль на юнит</div>
+        <div id="net" class="kpi-value">—</div>
+        <div class="kpi-foot">после всех расходов и налогов</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-title">Маржинальность</div>
+        <div id="margin" class="kpi-value">—</div>
+        <div class="kpi-foot">от выручки</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-title">Цена безубыточности*</div>
+        <div id="breakeven" class="kpi-value">—</div>
+        <div class="kpi-foot">приближение (УСН6/НПД/без налога)</div>
+      </div>
+    </section>
+
+    <main class="grid">
+      <div class="col col-wide">
+        <div class="card">
+          <h2>Базовые параметры</h2>
+          <div class="grid form">
+            <label>
+              <span>Схема</span>
+              <select id="scheme">
+                <option value="FBO">FBO</option>
+                <option value="FBS">FBS</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Категория товара</span>
+              <select id="category"></select>
+              <small class="muted">Комиссия подставится автоматически — можно поправить ниже</small>
+            </label>
+
+            <label>
+              <span>Цена, ₽</span>
+              <input id="price" type="number" value="1990" step="1" min="0">
+            </label>
+
+            <label>
+              <span>Скидка, %</span>
+              <input id="discountPct" type="number" value="10" step="0.5" min="0">
+            </label>
+
+            <label>
+              <span>Себестоимость (COGS), ₽</span>
+              <input id="cogs" type="number" value="700" step="1" min="0">
+            </label>
+
+            <label>
+              <span>Упаковка, ₽</span>
+              <input id="packaging" type="number" value="20" step="1" min="0">
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Комиссии и сборы</h2>
+          <div class="grid form">
+            <label>
+              <span>Комиссия маркетплейса, %</span>
+              <input id="commissionPct" type="number" value="13" step="0.5" min="0">
+              <small class="muted">Автоподстановка от категории и схемы</small>
+            </label>
+            <label>
+              <span>Фикс. сбор за заказ, ₽</span>
+              <input id="fixedFee" type="number" value="0" step="1" min="0">
+            </label>
+            <div class="info-row">Комиссия: <b id="commissionFmt">—</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Габариты и автологистика</h2>
+          <div class="grid form">
+            <label><span>Длина, см</span><input id="len" type="number" value="30" step="1" min="0"></label>
+            <label><span>Ширина, см</span><input id="wid" type="number" value="20" step="1" min="0"></label>
+            <label><span>Высота, см</span><input id="hei" type="number" value="10" step="1" min="0"></label>
+            <label><span>Вес, кг</span><input id="weightKg" type="number" value="0.6" step="0.01" min="0"></label>
+
+            <label class="checkbox">
+              <input id="autoLogistics" type="checkbox" checked>
+              <span>Автологистика по габаритам</span>
+            </label>
+          </div>
+
+          <div class="grid form">
+            <label>
+              <span>Входящая, ₽/кг (FBO)</span>
+              <input id="inboundPerKgFBO" type="number" value="14" step="1" min="0">
+            </label>
+            <label>
+              <span>Входящая, ₽/кг (FBS)</span>
+              <input id="inboundPerKgFBS" type="number" value="18" step="1" min="0">
+            </label>
+            <label>
+              <span>Входящая логистика вручную, ₽</span>
+              <input id="inboundManual" type="number" value="25" step="1" min="0">
+            </label>
+            <label>
+              <span>Последняя миля вручную, ₽</span>
+              <input id="lastMileManual" type="number" value="80" step="1" min="0">
+            </label>
+          </div>
+
+          <div class="muted small mt">
+            Коридоры последней мили редактируются в <code>script.js</code>:
+            <span class="chip">[0–0.5 кг]</span>
+            <span class="chip">[0.5–1]</span>
+            <span class="chip">[1–3]</span>
+            <span class="chip">[3–5]</span>
+            <span class="chip">[5–10]</span>
+            <span class="chip">&gt;10 кг: базовая + ₽/кг</span>
+          </div>
+
+          <div class="grid mini mt">
+            <div>Объёмный вес: <b id="volKg">—</b></div>
+            <div>Эффективный вес: <b id="effKg">—</b></div>
+            <div>Итого логистика: <b id="logiTotal">—</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Хранение, возвраты, брак, баллы и промо</h2>
+          <div class="grid form">
+            <label><span>Хранение, ₽/день</span><input id="storagePerDay" type="number" value="0.2" step="0.1" min="0"></label>
+            <label><span>Дней на складе</span><input id="storageDays" type="number" value="30" step="1" min="0"></label>
+            <label><span>Доля возвратов, %</span><input id="returnRatePct" type="number" value="3" step="0.5" min="0"></label>
+            <label><span>Обработка возврата, ₽</span><input id="returnProcCost" type="number" value="50" step="1" min="0"></label>
+            <label><span>Списание/брак, % от COGS</span><input id="defectRatePct" type="number" value="1" step="0.5" min="0"></label>
+            <label><span>Баллы/кэшбэк, % от цены</span><input id="cashbackPct" type="number" value="3" step="0.5" min="0"></label>
+            <label><span>Промо‑расходы, ₽/шт</span><input id="promoPerUnit" type="number" value="0" step="1" min="0"></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Реклама</h2>
+          <div class="grid form">
+            <label>
+              <span>Режим</span>
+              <select id="adMode">
+                <option value="ACOS">ACOS, % от выручки</option>
+                <option value="CPA">CPA, ₽ за заказ</option>
+              </select>
+            </label>
+            <label><span>ACOS, %</span><input id="acosPct" type="number" value="7" step="0.5" min="0"></label>
+            <label><span>CPA, ₽</span><input id="cpaValue" type="number" value="0" step="1" min="0"></label>
+            <div class="info-row">Реклама: <b id="adCostFmt">—</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Налоги</h2>
+          <div class="grid form">
+            <label>
+              <span>Режим налогообложения</span>
+              <select id="taxMode">
+                <option value="USN6">УСН 6% (доходы)</option>
+                <option value="USN15">УСН 15% (доходы‑расходы, мин. 1%)</option>
+                <option value="NPD4">НПД 4% (самозанятый)</option>
+                <option value="NONE">Без налога</option>
+              </select>
+            </label>
+          </div>
+          <div class="info-row">Налог на юнит: <b id="taxFmt">—</b></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card">
+          <h2>Разбор юнит‑экономики (на 1 проданный юнит)</h2>
+          <div class="kv">
+            <div>Выручка (после скидки)</div><div id="r1">—</div>
+            <div>Итого переменные расходы</div><div id="r2">—</div>
+            <div>Прибыль до налога</div><div id="r3">—</div>
+            <div>Налог</div><div id="r4">—</div>
+            <div>Чистая прибыль</div><div id="r5">—</div>
+            <div>Маржинальность</div><div id="r6">—</div>
+            <div>Цена безубыточности*</div><div id="r7">—</div>
+          </div>
+          <p class="muted small mt">* Приближённый расчёт для режимов с налогом от выручки (УСН 6%, НПД) и без налога. Для УСН 15% нужен итерационный поиск.</p>
+        </div>
+
+        <div class="card">
+          <h2>Декомпозиция расходов</h2>
+          <div class="kv">
+            <div>Себестоимость (COGS)</div><div id="d1">—</div>
+            <div>Упаковка</div><div id="d2">—</div>
+            <div>Комиссия маркетплейса</div><div id="d3">—</div>
+            <div>Логистика (входящая + последняя миля)</div><div id="d4">—</div>
+            <div>Хранение</div><div id="d5">—</div>
+            <div>Кэшбэк/баллы</div><div id="d6">—</div>
+            <div>Промо</div><div id="d7">—</div>
+            <div>Реклама</div><div id="d8">—</div>
+            <div>Возвраты (на проданный)</div><div id="d9">—</div>
+            <div>Списание/брак (на проданный)</div><div id="d10">—</div>
+            <div class="divider"></div>
+            <div>Итого расходы</div><div id="d11">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Подсказки</h2>
+          <ul class="tips">
+            <li>Категория → авто‑комиссия. При необходимости отредактируйте значение вручную.</li>
+            <li>Объёмный вес: литры = (Д×Ш×В)/1000; кг = литры/5. Берём максимум с фактическим весом.</li>
+            <li>Тарифы логистики примерные. Замените на свои из ЛК Ozon.</li>
+            <li>Добавьте в возвраты обратную доставку, если она у вас есть.</li>
+          </ul>
+        </div>
+      </div>
+    </main>
   </div>
 
   <script src="script.js"></script>
